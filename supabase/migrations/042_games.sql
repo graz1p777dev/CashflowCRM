@@ -88,9 +88,14 @@ CREATE TABLE public.game_bookings (
 -- Идемпотентность записи из бота: одна бронь на игру с одного чата.
 -- Отменённая бронь тоже занимает ключ — человек не должен «дублироваться»,
 -- вместо этого бот возвращает его же бронь и меняет ей статус.
-CREATE UNIQUE INDEX idx_game_bookings_chat
-  ON public.game_bookings(game_id, telegram_chat_id)
-  WHERE telegram_chat_id IS NOT NULL;
+--
+-- Индекс НЕ частичный намеренно: ON CONFLICT не умеет выводить частичный
+-- индекс без повторения его WHERE, а PostgREST такой синтаксис не отдаёт —
+-- upsert из бота падал бы с «no unique or exclusion constraint matching».
+-- Ручные записи без telegram_chat_id при этом не мешают друг другу:
+-- в Postgres два NULL не считаются равными.
+ALTER TABLE public.game_bookings
+  ADD CONSTRAINT game_bookings_chat_unique UNIQUE (game_id, telegram_chat_id);
 
 CREATE INDEX idx_game_bookings_game   ON public.game_bookings(game_id, created_at);
 CREATE INDEX idx_game_bookings_phone  ON public.game_bookings(phone);

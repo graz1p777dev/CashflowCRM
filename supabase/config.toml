@@ -1,21 +1,37 @@
+project_id = "cashflow-crm"
+
+# Порты сдвинуты на 544xx: на 543xx уже живёт локальный Supabase
+# MostovoyCRM, а два стека одновременно нужны — проекты разные.
 [api]
 enabled = true
-port = 54321
+port = 54421
 schemas = ["public", "graphql_public"]
 extra_search_path = ["public", "extensions"]
 max_rows = 1000
 
 [db]
-port = 54322
+port = 54422
 major_version = 15
-
-[studio]
-enabled = true
-port = 54323
 
 [auth]
 enabled = true
-site_url = "http://localhost:3000"
+site_url = "http://localhost:3020"
+
+# Локально поднимаем только то, без чего CRM не работает: база, авторизация
+# и REST. Docker на этой машине даёт 3.8 ГБ на всё, и рядом уже крутится
+# стек MostovoyCRM — полный набор контейнеров не проходит health-check.
+# На боевом Supabase эти сервисы включены и ничего отключать не нужно.
+[studio]
+enabled = false
 
 [storage]
-enabled = true
+enabled = false
+
+[realtime]
+enabled = false
+
+[inbucket]
+enabled = false
+
+[analytics]
+enabled = false
